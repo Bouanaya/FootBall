@@ -1,34 +1,34 @@
-"use client"
+// app/dashboard/page.js
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import { adminAuth } from "../../lib/firebaseAdmin"
+import  Logout  from "../../components/Buttons/logout"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { onAuthStateChanged, signOut } from "firebase/auth"
-import { auth } from "../../lib/firebase"
+export default async function DashboardPage() {
+  const cookieStore = cookies()
+  const token = cookieStore.get("session")?.value
+  
 
-export default function DashboardPage() {
-  const [user, setUser] = useState(null)
-  const router = useRouter()
+  if (!token) {
+    redirect("/login")
+  }
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) {
-        router.push("/login")
-      } else {
-        setUser(currentUser)
-      }
-    })
-    return () => unsubscribe()
-  }, [router])
+  let user
+  try {
+    const decodedToken = await adminAuth().verifyIdToken(token)
+    user = decodedToken
+    console.log(decodedToken);
+    
+  }
+   catch (error) {
 
-  const handleLogout = async () => {
-    await signOut(auth)
-    router.push("/login")
+    redirect("/login")
   }
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>مرحباً {user?.email}</h1>
-      <button onClick={handleLogout}>تسجيل الخروج</button>
+      <h1>مرحباً {user.email}</h1>
+      <Logout/>
     </div>
   )
 }

@@ -1,36 +1,50 @@
-"use client"
-import { useState } from "react"
-import {Input} from '../ui/input'
-import {Button} from '../ui/button'
-import { useRouter } from "next/navigation"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "../../lib/firebase"
+"use client";
+import { useState } from "react";
+import { Input } from "../ui/input";
+import Image from 'next/image'
+import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 import SplashCursor from "../nurui/splash-cursor";
+import { toast } from "sonner";
 export default function LoginForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const handleLogin = async (e) => {
-    e?.preventDefault()
-    setLoading(true)
-    setError("")
-    
+    e?.preventDefault();
+    setLoading(true);
+    setError("");
+
     // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // await new Promise(resolve => setTimeout(resolve, 1000))
       // Simulate error for demo
-      await signInWithEmailAndPassword(auth, email, password)
-       alert("تم تسجيل الدخول بنجاح!")
-      router.push("/dashboard")
-     
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const idToken = await userCredential.user.getIdToken();
+      // نرسل التوكن للسيرفر ليحطه في كوكي
+      console.log("ID Token:", idToken);
+      await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+      toast("✅ تم تسجيل الدخول بنجاح");
+      router.push("/dashboard");
     } catch (err) {
-      setError("❌ البريد الإلكتروني أو كلمة السر غير صحيحة")
+      toast("❌ البريد الإلكتروني أو كلمة السر غير صحيحة");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen img flex items-center justify-center p-4">
@@ -40,15 +54,18 @@ const router = useRouter()
         <div className="bg-slate-900/80 rounded-3xl shadow-2xl border border-gray-800 p-8 relative overflow-hidden">
           {/* Card Accent Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 via-blue-600/5 to-green-600/5 rounded-3xl"></div>
-          
+
           {/* Content */}
           <div className="relative z-10">
             {/* Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-300 rounded-2xl mb-4 shadow-lg">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+               <Image
+        src="/passkey.png" // المسار من public folder
+        alt="My photo"
+      width={50}          // عيّن العرض المناسب
+      height={50} 
+      />
               </div>
               <h1 className="text-3xl font-bold text-white mb-2">أهلاً بك</h1>
             </div>
@@ -60,16 +77,15 @@ const router = useRouter()
                 placeholder="البريد الإلكتروني"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className='bg-white'
-                
+                className="bg-white"
               />
-              
+
               <Input
                 type="password"
                 placeholder="كلمة السر"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                  className='bg-white'
+                className="bg-white"
               />
 
               {/* Error Message */}
@@ -84,7 +100,11 @@ const router = useRouter()
                 type="button"
                 onClick={handleLogin}
                 disabled={loading}
-                className={`mt-8  w-[100px] ${loading ? 'opacity-70 cursor-not-allowed w-[200px] bg-green-300' : ''}`}
+                className={`mt-8  w-[100px] ${
+                  loading
+                    ? "opacity-70 cursor-not-allowed w-[200px] bg-green-300"
+                    : ""
+                }`}
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -92,11 +112,10 @@ const router = useRouter()
                     جاري التحميل...
                   </div>
                 ) : (
-                  'دخول'
+                  "دخول"
                 )}
               </Button>
             </div>
-
           </div>
         </div>
 
@@ -107,18 +126,24 @@ const router = useRouter()
           <div className="absolute top-1/3 left-0 w-1 h-1 bg-green-300 rounded-full animate-ping delay-700"></div>
         </div>
       </div>
-  <SplashCursor />
+      {/* <SplashCursor /> */}
       <style jsx>{`
         @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-5px);
+          }
+          75% {
+            transform: translateX(5px);
+          }
         }
         .animate-shake {
           animation: shake 0.5s ease-in-out;
         }
       `}</style>
     </div>
-  
-  )
+  );
 }
