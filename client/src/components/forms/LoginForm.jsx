@@ -30,8 +30,6 @@ export default function LoginForm() {
         password
       );
       const idToken = await userCredential.user.getIdToken();
-      // نرسل التوكن للسيرفر ليحطه في كوكي
-      console.log("ID Token:", idToken);
       await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

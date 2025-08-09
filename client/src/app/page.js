@@ -1,10 +1,12 @@
-import Link from 'next/link'
 import React from 'react'
+import HeroSection from '../components/homePage/HeroSection'
+import ServiceSection from '../components/homePage/ServiceSection'
 
 export default function page() {
   return (
     <div>
-    <Link href='login'>login</Link>
+ <HeroSection/>
+ <ServiceSection/>
     </div>
   )
 }
