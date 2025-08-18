@@ -1,5 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app"
 import { getAuth } from "firebase/auth"
+import { getFirestore } from "firebase/firestore" // <-- استيراد Firestore
+import { getStorage } from "firebase/storage"     // <-- استيراد Storage
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,5 +16,7 @@ const firebaseConfig = {
 // تهيئة Firebase مرة وحدة فقط
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
 
-// خدمة المصادقة
+// خدمات Firebase
+export const db = getFirestore(app)
 export const auth = getAuth(app)
+export const storage = getStorage(app)

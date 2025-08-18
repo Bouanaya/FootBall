@@ -1,24 +1,7 @@
-// 'use client'
-// import React from 'react'
 
-// export default function SeviceSection() {
-//   return (
-//     <div className='px-8  py-10'>
-//      <div className="flex justify-start md:justify-center  items-center">
-//               <h1 className=" tracking-wide text-3xl md:text-6xl bg-gradient-to-r from-blue-600 via-indigo-600 to-secondary inline-block text-transparent bg-clip-text text-center ">
-//                 Service
-//               </h1>
-//             </div>
-//     </div>
-//   )
-// }
 'use client'
 import React, { useState } from "react";
 import Button from "../ui/button";
-
-// PhotoFilter component
-// Usage: drop this file into a Next.js / React project and render <PhotoFilter />
-// Requires Tailwind CSS configured in the project.
 
 export default function PhotoFilter() {
   const [active, setActive] = useState("All");
@@ -50,7 +33,7 @@ export default function PhotoFilter() {
           <Button
             key={cat}
             onClick={() => setActive(cat)}
-            className={`px-4 py-2  duration-150 focus:outline-none
+            className={`px-4 py-2  duration-500 focus:outline-none
               ${active === cat ? 'bg-primary text-white ' : 'bg-white text-slate-700 hover:shadow'}
             `}
           >

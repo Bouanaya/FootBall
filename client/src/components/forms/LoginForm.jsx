@@ -21,7 +21,7 @@ export default function LoginForm() {
 
     // Simulate API call
     try {
-      // await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       // Simulate error for demo
 
       const userCredential = await signInWithEmailAndPassword(
