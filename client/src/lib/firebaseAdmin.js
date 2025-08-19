@@ -1,5 +1,5 @@
 // lib/firebaseAdmin.js
-import admin from "firebase-admin"
+import admin from "firebase-admin";
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -8,7 +8,8 @@ if (!admin.apps.length) {
       clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL,
       privateKey: process.env.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
     }),
-  })
+  });
 }
 
-export const adminAuth = () => admin.auth()
+// نصدر instance مباشرة
+export const adminAuth = admin.auth();

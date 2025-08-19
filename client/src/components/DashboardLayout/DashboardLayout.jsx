@@ -31,7 +31,7 @@ export default function DashboardLayout({ children, onLogout }) {
     <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-20 w-64 transform bg-white border-r transition-transform duration-200 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-20 w-52 transform bg-white border-r transition-transform duration-200 ease-in-out ${
           open ? "-translate-x-0" : "-translate-x-0 lg:translate-x-0"
         }`}
       >
@@ -89,7 +89,7 @@ export default function DashboardLayout({ children, onLogout }) {
       </aside>
 
       {/* Content area */}
-      <div className="flex-1 min-h-screen pl-0 lg:pl-64">
+      <div className="flex-1 min-h-screen pl-0 lg:pl-52">
         <header className="h-16 flex items-center justify-between px-6 border-b bg-white">
           <div className="flex items-center gap-4">
             <button
@@ -109,7 +109,7 @@ export default function DashboardLayout({ children, onLogout }) {
           </div>
         </header>
 
-        <main className="p-6">{children}</main>
+        <main className="p-3">{children}</main>
       </div>
     </div>
   );
