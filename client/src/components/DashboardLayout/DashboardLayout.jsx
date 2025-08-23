@@ -109,7 +109,7 @@ export default function DashboardLayout({ children, onLogout }) {
           </div>
         </header>
 
-        <main className="p-3">{children}</main>
+        <main className="p-2">{children}</main>
       </div>
     </div>
   );

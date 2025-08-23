@@ -8,8 +8,10 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { User, Phone, MapPin, Trophy, Users, AlertCircle, CheckCircle, Calendar as CalendarIcon, Database, Wifi, WifiOff } from "lucide-react";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc } from "firebase/firestore";
 
-export default function PlayerForm({setShowAddForm}) {
+export default function PlayerForm({setShowAddForm , playerToEdit   }) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -18,26 +20,50 @@ export default function PlayerForm({setShowAddForm}) {
   const [firebaseStatus, setFirebaseStatus] = useState({ connected: true, initialized: true });
   const [savedPlayers, setSavedPlayers] = useState([]);
 
-  // Load existing players on component mount
-  useEffect(() => {
-    const loadPlayers = async () => {
-      try {
-        const playersCollection = collection(db, 'players');
-        const playersSnapshot = await getDocs(playersCollection);
-        const playersData = playersSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setSavedPlayers(playersData);
-        console.log(`📥 Loaded ${playersData.length} players from Firestore`);
-      } catch (error) {
-        console.error("Error loading players:", error);
-        setFirebaseStatus({ connected: false, initialized: false });
-      }
-    };
-    
-    loadPlayers();
-  }, []);
+
+  
+
+useEffect(() => {
+
+  if (playerToEdit) {
+    setFormData({
+      // Personal
+      fullName: playerToEdit.personal?.fullName || "",
+      cin: playerToEdit.personal?.cin || "",
+      nationality: playerToEdit.personal?.nationality || "Morocco",
+      phone: playerToEdit.personal?.phone || "",
+      birthDate: playerToEdit.personal?.birthDate ? new Date(playerToEdit.personal.birthDate) : null,
+      address: playerToEdit.personal?.address || "",
+
+      // Guardian
+      guardianName: playerToEdit.guardian?.name || "",
+      guardianPhone: playerToEdit.guardian?.phone || "",
+
+      // Football
+      position: playerToEdit.football?.position || "",
+      preferredFoot: playerToEdit.football?.preferredFoot || "right",
+      teamName: playerToEdit.football?.teamName || "",
+      jerseyNumber: playerToEdit.football?.jerseyNumber || "",
+      height: playerToEdit.football?.height || "",
+      weight: playerToEdit.football?.weight || "",
+
+      // Financial
+      membershipFee: playerToEdit.financial?.membershipFee || 0,
+      membershipPaid: playerToEdit.financial?.membershipPaid || false,
+
+      // Additional
+      medicalNotes: playerToEdit.additional?.medicalNotes || "",
+      imageUrl: playerToEdit.additional?.imageUrl || "",
+      joinDate: playerToEdit.additional?.joinDate ? new Date(playerToEdit.additional.joinDate) : new Date(),
+
+      // Metadata
+      createdAt: playerToEdit.metadata?.createdAt ? new Date(playerToEdit.metadata.createdAt) : new Date(),
+      updatedAt: new Date(),
+      isActive: playerToEdit.metadata?.isActive ?? true
+    });
+  }
+}, [playerToEdit]);
+
 
   const [formData, setFormData] = useState({
     // Personal Information
@@ -193,89 +219,35 @@ export default function PlayerForm({setShowAddForm}) {
     }
   };
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    setSubmitStatus(null);
 
-    try {
-      // Check Firebase connection
-      if (!firebaseStatus.connected || !firebaseStatus.initialized) {
-        throw new Error("FIREBASE_CONNECTION_ERROR");
-      }
 
-      // Format data for Firebase
-      const firebaseData = formatForFirebase(formData);
-      
-      // Add to Firebase Firestore
-    const docRef = await addDoc(collection(db, 'players'), firebaseData);
-      setShowAddForm(false)
-      // Success
-      setSubmitStatus({ 
-        type: 'success', 
-        message: `تم تسجيل اللاعب بنجاح! معرف الوثيقة: ${docRef.id}` 
+const handleSubmit = async () => {
+  setIsSubmitting(true);
+  setSubmitStatus(null);
 
-    
-      });
-      
-      // Update local players list
-      const updatedPlayersSnapshot = await getDocs(collection(db, 'players'));
-      const updatedPlayersData = updatedPlayersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setSavedPlayers(updatedPlayersData);
-      
-      // Reset form
-      setFormData({
-        fullName: "",
-        cin: "",
-        nationality: "Morocco",
-        phone: "",
-        birthDate: null,
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        position: "",
-        preferredFoot: "right",
-        teamName: "",
-        jerseyNumber: "",
-        height: "",
-        weight: "",
-        membershipFee: 0,
-        membershipPaid: false,
-        medicalNotes: "",
-        imageUrl: "",
-        joinDate: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isActive: true
-      });
-      setStep(1);
-      setErrors({});
-      
-    } catch (error) {
-      console.error("Firebase submission error:", error);
-      
-      let errorMessage = 'حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.';
-      
-      if (error.message === "DUPLICATE_CIN") {
-        errorMessage = 'هذا اللاعب مسجل بالفعل برقم البطاقة الوطنية نفسه.';
-      } else if (error.message === "FIREBASE_CONNECTION_ERROR") {
-        errorMessage = 'لا يمكن الاتصال بقاعدة البيانات. تحقق من اتصال الإنترنت.';
-      } else if (error.code === 'permission-denied') {
-        errorMessage = 'ليس لديك صلاحية للكتابة في قاعدة البيانات.';
-      } else if (error.code === 'unavailable') {
-        errorMessage = 'خدمة قاعدة البيانات غير متاحة حالياً. أعد المحاولة لاحقاً.';
-      }
-      
-      setSubmitStatus({ 
-        type: 'error', 
-        message: errorMessage
-      });
-    } finally {
-      setIsSubmitting(false);
+  try {
+    const firebaseData = formatForFirebase(formData);
+
+    if (playerToEdit?.id) {
+      // تحديث
+      await updateDoc(doc(db, "players", playerToEdit.id), firebaseData);
+      setSubmitStatus({ type: "success", message: "تم تحديث اللاعب بنجاح ✅" });
+    } else {
+      // إضافة جديدة
+      const docRef = await addDoc(collection(db, "players"), firebaseData);
+      setSubmitStatus({ type: "success", message: `تم تسجيل اللاعب بنجاح! معرف: ${docRef.id}` });
     }
-  };
+
+    setShowAddForm(false);
+    onSubmit && onSubmit(); // نرجع للجدول باش يحدّث
+  } catch (error) {
+    console.error("Firebase error:", error);
+    setSubmitStatus({ type: "error", message: "خطأ أثناء الحفظ" });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const nextStep = () => {
     if (validateStep1()) {
@@ -297,7 +269,7 @@ export default function PlayerForm({setShowAddForm}) {
 
   return (
     <div className="flex justify-end h-full ">
-      <div className="bg-white w-1/2   shadow-xl p-8 overflow-auto">
+      <div className="bg-white w-[40%]   shadow-xl p-8 overflow-auto">
         <div className="space-y-6">
           {step === 1 && (
             <div className="space-y-6">
@@ -312,7 +284,7 @@ export default function PlayerForm({setShowAddForm}) {
                     الاسم الكامل *
                   </label>
                   <Input 
-                    placeholder="مثال: سوفيان بن فلان" 
+                    placeholder="soufiane" 
                     className="text-right"
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
@@ -624,6 +596,7 @@ export default function PlayerForm({setShowAddForm}) {
           )}
         </div>
       </div>
+      
     </div>
   );
 }
