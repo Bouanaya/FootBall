@@ -239,7 +239,7 @@ const handleSubmit = async () => {
     }
 
     setShowAddForm(false);
-    onSubmit && onSubmit(); // نرجع للجدول باش يحدّث
+ // نرجع للجدول باش يحدّث
   } catch (error) {
     console.error("Firebase error:", error);
     setSubmitStatus({ type: "error", message: "خطأ أثناء الحفظ" });
@@ -564,6 +564,8 @@ const handleSubmit = async () => {
                   value={formData.imageUrl}
                   onChange={(e) => handleInputChange('imageUrl', e.target.value)}
                 />
+
+  
               </div>
 
               <div className="flex justify-between pt-6">

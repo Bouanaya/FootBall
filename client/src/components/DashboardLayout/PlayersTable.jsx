@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import PlayersForm from "../../components/forms/PlayerForm";
 import * as playersService from "../../app/api/playersService";
 import { MoreHorizontal } from "lucide-react";
+import CartPlayer  from '../../components/Carts/CartPlayer'
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +39,7 @@ export default function PlayersTable() {
     }
     return colors[Math.abs(hash) % colors.length];
   }
+ 
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -78,6 +81,16 @@ export default function PlayersTable() {
     updatedAt: new Date(),
     isActive: true,
   });
+ const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [card, setCard] = useState(false);
+
+  const handlePlayerClick  = (player) => {
+    setSelectedPlayer(player);
+    setCard(true);
+ 
+
+    
+  };
 
   // Charger les joueurs avec écoute en temps réel
   useEffect(() => {
@@ -105,7 +118,8 @@ export default function PlayersTable() {
 
   const handleUpdatePlayer = (player) => {
     setShowAddForm(true);
-    setPlayerToEdit(player); // state فيه اللاعب لي بغيت نعدلو
+    setPlayerToEdit(player);
+  // state فيه اللاعب لي بغيت نعدلو
     // setShowAddForm(true);
   };
 
@@ -133,6 +147,7 @@ export default function PlayersTable() {
   const filteredPlayers = players.filter((player) =>
     player.personal?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -216,7 +231,7 @@ export default function PlayersTable() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredPlayers.map((player) => (
-                    <tr key={player.id} className="hover:bg-gray-50">
+                    <tr key={player.id}  className="hover:bg-gray-50 cursor-pointer">
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center">
                           {player?.additional?.imageUrl ? (
@@ -224,6 +239,7 @@ export default function PlayersTable() {
                               className="h-10 w-10 rounded-full object-cover"
                               src={player.additional.imageUrl}
                               alt={player?.personal?.fullName || "Player"}
+                              onClick={() => handlePlayerClick(player)}
                             />
                           ) : (
                             <span
@@ -296,8 +312,8 @@ export default function PlayersTable() {
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                                 class="lucide lucide-pen-line-icon lucide-pen-line text-primary"
                               >
                                 <path d="M13 21h8" />
@@ -317,8 +333,8 @@ export default function PlayersTable() {
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                                 class="lucide lucide-trash-icon lucide-trash text-red-500"
                               >
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
@@ -359,6 +375,17 @@ export default function PlayersTable() {
           </div>
         )}
       </div>
+
+<CartPlayer
+ selectedPlayer={selectedPlayer} 
+  card={card} 
+  setCard={setCard}
+/>
+
+
+
+
+
     </div>
   );
 }
