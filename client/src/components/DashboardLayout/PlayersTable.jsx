@@ -4,14 +4,12 @@ import React, { useState, useEffect } from "react";
 import PlayersForm from "../../components/forms/PlayerForm";
 import * as playersService from "../../app/api/playersService";
 import { MoreHorizontal } from "lucide-react";
-import CartPlayer  from '../../components/Carts/CartPlayer'
+import CartPlayer from "../../components/Carts/CartPlayer";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import Input from "../ui/input";
@@ -39,13 +37,50 @@ export default function PlayersTable() {
     }
     return colors[Math.abs(hash) % colors.length];
   }
- 
+
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState(null);
+  const [update, setUpdate] = useState(false);
+
+  const initialForm = {
+    // Personal Information
+    fullName: "",
+    cin: "",
+    nationality: "Morocco",
+    phone: "",
+    birthDate: null,
+    address: "",
+
+    // Guardian Information
+    guardianName: "",
+    guardianPhone: "",
+
+    // Football Information
+    position: "",
+    preferredFoot: "right",
+    teamName: "",
+    jerseyNumber: "",
+    height: "",
+    weight: "",
+
+    // Financial Information
+    membershipFee: 0,
+    membershipPaid: false,
+
+    // Additional Information
+    medicalNotes: "",
+    imageUrl: "",
+    joinDate: new Date(),
+
+    // Firebase metadata
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    isActive: true,
+  };
   const [formData, setFormData] = useState({
     // Personal Information
     fullName: "",
@@ -81,15 +116,12 @@ export default function PlayersTable() {
     updatedAt: new Date(),
     isActive: true,
   });
- const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [card, setCard] = useState(false);
 
-  const handlePlayerClick  = (player) => {
+  const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
     setCard(true);
- 
-
-    
   };
 
   // Charger les joueurs avec écoute en temps réel
@@ -117,10 +149,10 @@ export default function PlayersTable() {
   }, []);
 
   const handleUpdatePlayer = (player) => {
-    setShowAddForm(true);
+    console.log(player);
+
     setPlayerToEdit(player);
-  // state فيه اللاعب لي بغيت نعدلو
-    // setShowAddForm(true);
+    setShowAddForm(true);
   };
 
   // Supprimer un joueur
@@ -148,7 +180,6 @@ export default function PlayersTable() {
     player.personal?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -160,7 +191,10 @@ export default function PlayersTable() {
               Gestion des Joueurs
             </h1>
             <Button
-              onClick={() => setShowAddForm(true)}
+              onClick={() => {
+                setFormData(initialForm);
+                setShowAddForm(true);
+              }}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
               disabled={loading}
             >
@@ -204,46 +238,51 @@ export default function PlayersTable() {
           ) : (
             <div className="overflow-x-auto mx-h-80 ">
               <table className="w-full">
-                <thead className="bg-gray-200">
+                <thead className="bg-primary">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">
                       Joueur
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">
                       phone
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">
                       position
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      membership
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">
+                      foot
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-white uppercase">
+                      body
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-white uppercase">
                       joinDate
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">
                       guardianPhone
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-100  ">
                   {filteredPlayers.map((player) => (
-                    <tr key={player.id}  className="hover:bg-gray-50 cursor-pointer">
-                      <td className="px-4 py-3 whitespace-nowrap">
+                    <tr key={player.id} className="bg-white cursor-pointer">
+                      <td
+                        className="px-4 py-3 whitespace-nowrap"
+                        onClick={() => handlePlayerClick(player)}
+                      >
                         <div className="flex items-center">
                           {player?.additional?.imageUrl ? (
                             <img
                               className="h-10 w-10 rounded-full object-cover"
                               src={player.additional.imageUrl}
                               alt={player?.personal?.fullName || "Player"}
-                              onClick={() => handlePlayerClick(player)}
                             />
                           ) : (
                             <span
-                              className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${getColorFromName(
+                              className={`w-10 h-10 rounded-full  flex items-center justify-center text-white font-bold ${getColorFromName(
                                 player?.personal?.fullName
                               )}`}
                             >
@@ -253,36 +292,65 @@ export default function PlayersTable() {
                             </span>
                           )}
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {player?.personal?.fullName}
+                            <div className="text-sm font-medium ">
+                              {player?.personal?.fullName.toUpperCase()}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-green-500">
                               {player?.personal?.nationality}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap text-left">
                         <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                           {player?.personal?.phone}
                         </span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {player?.football?.position}
+                      <td className="px-4 py-3  space-x-1 items-center  whitespace-nowrap text-sm text-green-400">
+                        <span className="text-primary">
+                          {player?.football?.position}
+                        </span>
+                        <span className="text-green-500 font-bold">++</span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-bold text-green-600">
-                        {player?.financial?.membershipFee}
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {player?.football?.preferredFoot === "left" ? (
+                          <div className="bg-blue-100 p-1 rounded-xl   flex items-center justify-center">
+                            <img
+                              src="https://www.futbin.com/design2/img/static/filters/foot-left.svg"
+                              alt=""
+                              className="w-6 h-6"
+                            />
+                          </div>
+                        ) : player?.football?.preferredFoot === "right" ? (
+                          <div className="bg-green-100 p-1 rounded-xl   flex items-center justify-center">
+                            <img
+                              src="https://www.futbin.com/design2/img/static/filters/foot-right.svg"
+                              alt=""
+                              className="w-6 h-6"
+                            />
+                          </div>
+                        ) : (
+                          <div className="bg-yellow-100 p-1 rounded-xl w-6 h-6 flex items-center justify-center">
+                            Both
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm flex flex-col">
+                        <span className="text-sm">
+                          {player.football?.height || "-"}cm{" "}
+                        </span>
+                        <span>{player.football?.weight || "-"}kg</span>
                       </td>
 
-                      <td className="px-4 py-3 whitespace-nowrap text-right text-sm text-gray-900">
-                        {player?.metadata?.createdAt
+                      <td className="px-4 py-3 whitespace-nowrap text-right text-sm  ">
+                        {player?.personal?.birthDate
                           ? new Date(
-                              player.metadata.createdAt
+                              player.personal.birthDate
                             ).toLocaleDateString("fr-MA")
                           : "-"}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap ">
-                        <span className="px-2 py-1 text-xs rounded-full bg-red-200 text-blue-800">
+                      <td className="px-4 py-3 whitespace-nowrap text-center ">
+                        <span className="px-2 py-1   text-xs rounded-full bg-red-200 text-blue-800">
                           {player?.guardian?.phone}
                         </span>
                       </td>
@@ -296,13 +364,16 @@ export default function PlayersTable() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-5 w-5" />
+                              <MoreHorizontal className="h-5 w-5 text-primary" />
                             </Button>
                           </DropdownMenuTrigger>
 
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={() => handleUpdatePlayer(player)}
+                              onClick={() => {
+                                handleUpdatePlayer(player);
+                                setUpdate(true);
+                              }}
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -314,7 +385,7 @@ export default function PlayersTable() {
                                 strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                class="lucide lucide-pen-line-icon lucide-pen-line text-primary"
+                                className="lucide lucide-pen-line-icon lucide-pen-line text-primary"
                               >
                                 <path d="M13 21h8" />
                                 <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
@@ -335,7 +406,7 @@ export default function PlayersTable() {
                                 strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                class="lucide lucide-trash-icon lucide-trash text-red-500"
+                                className="lucide lucide-trash-icon lucide-trash text-red-500"
                               >
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
                                 <path d="M3 6h18" />
@@ -361,31 +432,21 @@ export default function PlayersTable() {
         </div>
 
         {/* Formulaire d'ajout */}
-        {showAddForm && (
-          <div className="  inset-0 bg-black/70 bg-opacity-50  z-40 fixed   ">
-            <div
-              className="inset-0   absolute w-[60%] top-0 bottom-0  z-50"
-              onClick={() => setShowAddForm(false)}
-            ></div>
-            <PlayersForm
-              setShowAddForm={setShowAddForm}
-            playerToEdit={playerToEdit}
-              
-            />
-          </div>
-        )}
+
+        <PlayersForm
+          setShowAddForm={setShowAddForm}
+          playerToEdit={playerToEdit}
+          showAddForm={showAddForm}
+          update={update}
+          setPlayerToEdit={setPlayerToEdit}
+        />
       </div>
 
-<CartPlayer
- selectedPlayer={selectedPlayer} 
-  card={card} 
-  setCard={setCard}
-/>
-
-
-
-
-
+      <CartPlayer
+        selectedPlayer={selectedPlayer}
+        card={card}
+        setCard={setCard}
+      />
     </div>
   );
 }
